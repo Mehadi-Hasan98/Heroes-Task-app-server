@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+require('dotenv').config();
 const { MongoClient, ServerApiVersion } = require('mongodb');
 
 const port = process.env.PORT || 5000;
@@ -13,35 +14,72 @@ app.use(express.json());
 
 
 
-const uri = "mongodb+srv://todo-app:<8lIeyGOCKhaRxSs9>@cluster0.skzs4.mongodb.net/?retryWrites=true&w=majority";
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.skzs4.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
 
 
 async function run() {
-    try {
-        await client.connect();
-        const taskCollection = client.db("todo").collection("task");
+  try {
+    await client.connect();
+    const taskCollection = client.db("todo-app").collection("task");
+    const completeTaskCollection = client.db("todo-app").collection("complete");
 
-        // GET
-         
-        app.get("/task", async (req, res) => {
-            const query = req.body;
-            const cursor = taskCollection.find(query);
-            const tasks = await cursor.toArray();
-            res.send(tasks);
-          });
+    // Get All Task
+    app.get("/task", async (req, res) => {
+      const query = req.body;
+      const task = await taskCollection.find(query).toArray();
+      res.send(task);
+    });
 
-          
-        // POST
+    app.get("/task/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const productId = await taskCollection.findOne(query);
+      res.send(productId);
+    });
 
-        app.post('/task', async(req, res) =>{
-            const newItem = req.body;
-            const result = await taskCollection.insertOne(newItem);
-            res.send(result);
-        });
-        
-    }
+    app.put("/task/:id", async (req, res) => {
+      const id = req.params.id;
+      const updatedUser = req.body;
+      const filter = { _id: ObjectId(id) };
+      const options = { upsert: true };
+      const updatedDoc = {
+        $set: {
+          task: updatedUser.task,
+        },
+      };
+      const result = await taskCollection.updateOne(
+        filter,
+        updatedDoc,
+        options
+      );
+      res.send(result);
+    });
+
+    // Submit Task From tasks Collection
+    app.post("/task", async (req, res) => {
+      const query = req.body;
+      const tasks = await taskCollection.insertOne(query);
+      res.send(tasks);
+    });
+
+    // Get All Task
+    app.get("/complete", async (req, res) => {
+      const query = req.body;
+      const task = await completeTaskCollection.find(query).toArray();
+      res.send(task);
+    });
+
+
+    // Submit Task From tasks Collection
+    app.post("/complete", async (req, res) => {
+      const query = req.body;
+      const tasks = await completeTaskCollection.insertOne(query);
+      res.send(tasks);
+    });
+  }
+    
     finally {
 
     }
@@ -57,3 +95,41 @@ app.get("/", (req, res) => {
 app.listen(port, () => {
   console.log("Hello I'm Listening to port", port);
 });
+
+
+// try {
+//   await client.connect();
+//   const taskCollection = client.db("todo-app").collection("task");
+//   const completeTaskCollection = client.db("todo-app").collection("complete-tasks");
+
+//   // GET
+   
+//   app.get("/task", async (req, res) => {
+//       const query = req.body;
+//       const cursor = taskCollection.find(query);
+//       const tasks = await cursor.toArray();
+//       res.send(tasks);
+//     });
+
+//   app.get("/complete", async (req, res) => {
+//       const query = req.body;
+//       const cursor = completeTaskCollection.find(query);
+//       const result = await cursor.toArray();
+//       res.send(result);
+//     });
+
+    
+//   // POST
+
+//   app.post('/task', async(req, res) =>{
+//       const query = req.body;
+//       const result = await taskCollection.insertOne(query);
+//       res.send(result);
+//   });
+//   app.post('/complete', async(req, res) =>{
+//       const query = req.body;
+//       const tasks = await completeTaskCollection.insertOne(query);
+//       res.send(tasks);
+//   });
+  
+// }
