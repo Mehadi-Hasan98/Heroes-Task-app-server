@@ -25,6 +25,8 @@ async function run() {
     const taskCollection = client.db("todo-app").collection("task");
     const completeTaskCollection = client.db("todo-app").collection("complete");
 
+
+
     // Get All Task
     app.get("/task", async (req, res) => {
       const query = req.body;
@@ -38,6 +40,8 @@ async function run() {
       const productId = await taskCollection.findOne(query);
       res.send(productId);
     });
+
+    // PUT for updated tasks
 
     app.put("/task/:id", async (req, res) => {
       const id = req.params.id;
@@ -97,39 +101,3 @@ app.listen(port, () => {
 });
 
 
-// try {
-//   await client.connect();
-//   const taskCollection = client.db("todo-app").collection("task");
-//   const completeTaskCollection = client.db("todo-app").collection("complete-tasks");
-
-//   // GET
-   
-//   app.get("/task", async (req, res) => {
-//       const query = req.body;
-//       const cursor = taskCollection.find(query);
-//       const tasks = await cursor.toArray();
-//       res.send(tasks);
-//     });
-
-//   app.get("/complete", async (req, res) => {
-//       const query = req.body;
-//       const cursor = completeTaskCollection.find(query);
-//       const result = await cursor.toArray();
-//       res.send(result);
-//     });
-
-    
-//   // POST
-
-//   app.post('/task', async(req, res) =>{
-//       const query = req.body;
-//       const result = await taskCollection.insertOne(query);
-//       res.send(result);
-//   });
-//   app.post('/complete', async(req, res) =>{
-//       const query = req.body;
-//       const tasks = await completeTaskCollection.insertOne(query);
-//       res.send(tasks);
-//   });
-  
-// }
